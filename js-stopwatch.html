@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS Stopwatch</title>
+    <style>
+        :root {
+            --orange: #ffa600;
+            --grey: #f3f3f3;
+            --white: #fff;
+            --base-color: var(--orange);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .transition {
+            -webkit-transition: all 0.5s ease-in-out;
+            -moz-transition: all 0.5s ease-in-out;
+            transition: all 0.5s ease-in-out;
+        }
+
+        body {
+            background: var(--orange);
+            font-family: Arial, Helvetica, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            height: 100%;
+            margin: 2rem auto;
+            color: var(--white);
+            text-align: center;
+        }
+
+        .stopwatch {
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap;
+            width: 50%;
+            /* justify-content: center; */
+            margin-bottom: auto;
+            font-size: 4rem;
+            font-family: monospace;
+        }
+
+        .stopwatch div {
+            width: 20%;
+        }
+
+        .app_title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: auto;
+            font-family: monospace;
+            font-weight: 100;
+            font-size: 2.6em;
+            text-transform: uppercase;
+            text-align: left;
+            width: 100%;
+        }
+
+        .app_title span {
+            margin-left: 25%;
+            text-align: right;
+            font-size: 1.25rem;
+        }
+
+        .btns {
+            margin-bottom: auto;
+        }
+
+        button {
+            background: var(--orange);
+            color: var(--white);
+            border: .25rem solid var(--white);
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            font-family: monospace;
+            padding: 1rem 2rem;
+            outline: none;
+        }
+
+
+
+        button:hover {
+            transition: all 0.2s ease-in-out;
+            background: var(--white);
+            color: var(--orange);
+        }
+
+        button:active {
+            border-color: #222;
+            color: #222;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <h1 class="app_title">Stopwatch <span>a vanilla js stopwatch</span></h1>
+        <div class="stopwatch">
+            <div>00</div>:
+            <div>00</div>:
+            <div>00</div>:
+            <div>00</div>
+
+        </div>
+        <div class="btns">
+            <button>Start</button>
+            <button>Reset</button>
+        </div>
+    </div>
+
+    <script>
+        window.onload = e => {
+            const utils = {
+                seconds: 0,
+                minutes: 0,
+                hours: 0,
+                ms: 0,
+                interval: undefined,
+                click_count: 1,
+                setSeconds: function (secs) {
+                    this.seconds = secs
+                },
+                setMinutes: function (mins) {
+                    this.minutes = mins
+                },
+                setHours: function (hours) {
+                    this.hours = hours
+                },
+                setMS: function (mils) {
+                    this.ms = mils
+                }
+            }
+
+            const stopwatch = document.querySelector(".stopwatch")
+            const btns = document.querySelector(".btns")
+            const toggle = btns.children[0]
+            const reset = btns.children[1]
+            const msDis = stopwatch.children[3]
+            const secondsDis = stopwatch.children[2]
+            const minutesDis = stopwatch.children[1]
+            const hoursDis = stopwatch.children[0]
+
+            const updateUI = (...new_ui_values) => {
+                function extra_zero_checker(x) {
+                    if (x < 10) {
+                        return `0${x}`
+                    } else {
+                        return x
+                    }
+                }
+
+                function ms_extra_zero_checker(x) {
+                    if (x < 10) {
+                        return `00${x}`
+                    } else if (x < 100) {
+                        return `0${x}`
+                    } else {
+                        return x
+                    }
+                }
+                msDis.textContent = ms_extra_zero_checker(new_ui_values[0])
+                secondsDis.textContent = extra_zero_checker(new_ui_values[1])
+                minutesDis.textContent = extra_zero_checker(new_ui_values[2])
+                hoursDis.textContent = extra_zero_checker(new_ui_values[3])
+            }
+
+
+
+            function startTimer() {
+                utils.setMS(utils.ms + 10)
+                updateUI(utils.ms, utils.seconds, utils.minutes, utils.hours)
+
+                if (utils.ms === 1000) {
+                    utils.setMS(0)
+                    utils.setSeconds(utils.seconds + 1)
+
+                    updateUI(utils.ms, utils.seconds, utils.minutes, utils.hours)
+
+                    if (utils.seconds === 60) {
+                        utils.setSeconds(0)
+                        utils.setMinutes(utils.minutes + 1)
+                        updateUI(utils.ms, utils.seconds, utils.minutes, utils.hours)
+
+                        if (utils.minutes === 60) {
+                            utils.setMinutes(0)
+                            utils.setHours(utils.hours + 1)
+                            updateUI(utils.ms, utils.seconds, utils.minutes, utils.hours)
+                        }
+                    }
+                }
+
+
+            }
+
+            const resetTimer = e => {
+                clearInterval(utils.interval)
+                utils.setMS(0)
+                utils.setSeconds(0)
+                utils.setMinutes(0)
+                utils.setHours(0)
+                utils.click_count = 1
+                document.title = "JS Stopwatch"
+                secondsDis.textContent = `00`
+                minutesDis.textContent = `00`
+                hoursDis.textContent = `00`
+                msDis.textContent = `00`
+                toggle.textContent = "Start"
+            }
+            toggle.onclick = e => {
+                utils.click_count++
+                if (utils.click_count % 2 === 0) {
+                    e.target.textContent = "Pause"
+                    utils.interval = setInterval(startTimer, 10)
+                } else {
+                    e.target.textContent = "Start"
+                    clearInterval(utils.interval)
+                }
+                // e.target.textContent = "Pause"
+                // utils.interval = setInterval(function () {
+                //     startTimer()
+                // }, 10)
+                // clearInterval(utils.interval)
+            }
+
+            reset.onclick = e => {
+                resetTimer()
+            }
+
+
+        }
+
+        //     function startTimer() {
+        //         tens++;
+        //         if (tens <= 9) {
+        //             tensDis.innerHTML = `0${tens}`
+        //         }
+        //         if (tens > 9) {
+        //             seconds++
+        //             secondsDis.innerHTML = `0${seconds}`
+        //             tens = 0
+        //             tensDis.innerHTML = `0${0}`
+        //         }
+        //         if (seconds > 9) {
+        //             secondsDis.innerHTML = seconds
+        //         }
+        //     }
+        // }
+
+        //     startBtn.onclick = e => {
+        //         clearInterval(Interval)
+        //         Interval = setInterval(startTimer, 10)
+        //     }
+
+        //     stopBtn.onclick = e => {
+        //         clearInterval(Interval)
+        //     }
+
+
+    </script>
+</body>
+
+</html>

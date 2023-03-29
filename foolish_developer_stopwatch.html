@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foolish Developer Stopwatch</title>
+    <style>
+        :root {
+            --mid-blue: #5181FF;
+            --dark-blue: #2382BC;
+            --red: #D23637;
+            --green: #26B580;
+            --white: #fff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: monospace;
+            background: var(--mid-blue);
+        }
+
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 90%;
+            height: 50%;
+            background: whitesmoke;
+            border-radius: .5rem;
+            box-shadow: 0 0 1rem rgba(0, 0, 0, 0.548);
+        }
+
+        .stopwatch {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2.5%;
+            font-size: 3rem;
+            color: var(--dark-blue);
+            margin-top: auto;
+            background: transparent;
+            padding: 3rem;
+            margin: 1rem;
+            border-radius: .5rem;
+            box-shadow: 0 0 1rem #2381bc8e;
+        }
+
+
+        .stopwatch div {
+            font-size: 3rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: var(--dark-blue);
+        }
+
+        .btns {
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+            width: 100%;
+            margin-top: auto;
+            margin-bottom: auto;
+        }
+
+        .btns div {
+            cursor: pointer;
+            background: var(--red);
+            color: var(--white);
+            padding: 1rem 2rem;
+            font-size: 1.5rem;
+            border-radius: .5rem;
+            font-weight: 600;
+        }
+
+        .btn-start {
+            border: 1px solid transparent;
+        }
+
+        .btn-pause {
+            background: var(--dark-blue) !important;
+            opacity: 100%;
+            border: 1px solid transparent;
+        }
+
+        .btn-reset {
+            background: var(--green) !important;
+            border: 1px solid transparent;
+        }
+
+        .btn-start:hover {
+            transition: all 0.1s ease-in-out;
+            background: #d236369d !important;
+        }
+
+        .btn-pause:hover {
+            transition: all 0.1s ease-in-out;
+            background: #2381bcb0 !important;
+        }
+
+        .btn-reset:hover {
+            transition: all 0.1s ease-in-out;
+            background: #26b58194 !important;
+        }
+
+
+        .btn-pause:active,
+        .btn-pause:focus {
+            transition: all 0.1s ease-in-out;
+            background: transparent !important;
+            border: 1px solid var(--dark-blue);
+            color: var(--dark-blue);
+        }
+
+        .btn-start:active,
+        .btn-start:focus {
+            transition: all 0.1s ease-in-out;
+            background: transparent !important;
+            border: 1px solid var(--red);
+            color: var(--red);
+        }
+
+        .btn-reset:active,
+        .btn-reset:focus {
+            transition: all 0.1s ease-in-out;
+            background: transparent !important;
+            border: 1px solid var(--green);
+            color: var(--green);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="stopwatch">
+            <div class="hours">00</div>:
+            <div class="minutes">00</div>:
+            <div class="seconds">00</div>:
+            <div class="ms">000</div>
+        </div>
+        <div class="btns">
+            <div class="btn-pause">Pause</div>
+            <div class="btn-start">Start</div>
+            <div class="btn-reset">Reset</div>
+        </div>
+    </div>
+
+
+    <script>
+
+        const Stopwatch = {
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
+            ms: 0,
+            Interval: undefined,
+            click_count: 0,
+            setH: function (h) {
+                this.hours = h
+            },
+            setM: function (m) {
+                this.minutes = m
+            },
+            setS: function (s) {
+                this.seconds = s
+            },
+            setMs: function (ms) {
+                this.ms = ms
+            },
+            setClickCount: function (cc) {
+                this.click_count = cc
+            },
+            set_interval: function (intr) {
+                this.Interval = intr
+            }
+        }
+
+
+        const updateUI = (...new_ui_values) => {
+
+            function extra_zero_checker(x) {
+                return x < 10 ? `0${x}` : x
+            }
+
+            function ms_extra_zero_checker(x) {
+                return x < 10 ? `00${x}` : x < 100 ? `0${x}` : x
+            }
+
+            hoursDis.textContent = extra_zero_checker(new_ui_values[0]);
+            minutesDis.textContent = extra_zero_checker(new_ui_values[1]);
+            secondsDis.textContent = extra_zero_checker(new_ui_values[2]);
+            msDis.textContent = ms_extra_zero_checker(new_ui_values[3]);
+
+        }
+
+        const stopwatchDis = document.querySelector(".stopwatch")
+        const hoursDis = stopwatchDis.children[0],
+            minutesDis = stopwatchDis.children[1],
+            secondsDis = stopwatchDis.children[2],
+            msDis = stopwatchDis.children[3]
+
+        const btns = document.querySelector(".btns")
+        const pauseBtn = btns.children[0]
+        const startBtn = btns.children[1]
+        const resetBtn = btns.children[2]
+
+        const initTimer = () => {
+            Stopwatch.setMs(Stopwatch.ms + 10)
+            updateUI(Stopwatch.hours, Stopwatch.minutes, Stopwatch.seconds, Stopwatch.ms)
+
+            if (Stopwatch.ms == 1000) {
+                Stopwatch.setMs(0)
+                Stopwatch.setS(Stopwatch.seconds + 1)
+                updateUI(Stopwatch.hours, Stopwatch.minutes, Stopwatch.seconds, Stopwatch.ms)
+
+                if (Stopwatch.seconds == 60) {
+                    Stopwatch.setS(0)
+                    Stopwatch.setM(Stopwatch.minutes + 1)
+                    updateUI(Stopwatch.hours, Stopwatch.minutes, Stopwatch.seconds, Stopwatch.ms)
+
+                    if (Stopwatch.minutes == 60) {
+                        Stopwatch.setM(0)
+                        Stopwatch.setH(Stopwatch.hours + 1)
+                        updateUI(Stopwatch.hours, Stopwatch.minutes, Stopwatch.seconds, Stopwatch.ms)
+                    }
+                }
+
+            }
+        }
+
+        const resetTimer = () => {
+            Stopwatch.setH(0)
+            Stopwatch.setM(0)
+            Stopwatch.setS(0)
+            Stopwatch.setMs(0)
+            Stopwatch.setClickCount(0)
+            clearInterval(Stopwatch.Interval)
+            startBtn.removeEventListener("click", initTimer)
+            updateUI(0, 0, 0, 0)
+        }
+
+        startBtn.addEventListener("click", function (e) {
+            Stopwatch.setClickCount(Stopwatch.click_count + 1)
+            if (Stopwatch.click_count == 1) {
+                Stopwatch.Interval = setInterval(initTimer, 10)
+            }
+
+        })
+        pauseBtn.addEventListener("click", function () {
+            Stopwatch.setClickCount(0)
+            clearInterval(Stopwatch.Interval)
+        })
+        resetBtn.addEventListener("click", function () {
+            resetTimer()
+        })
+
+    </script>
+</body>
+
+</html>
